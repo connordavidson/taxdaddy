@@ -21,6 +21,7 @@ export const TAX_RULES_2027 = {
       name: 'IRS Rev. Proc. 2026-35, sections 3.01, 3.03 and 3.15',
       url: 'https://www.irs.gov/irb/2026-48_IRB',
     },
+    qcd: { name: 'IRS Notice 2026-66', url: 'https://www.irs.gov/pub/irs-drop/n-26-66.pdf' },
   },
   statuses: STATUSES,
   ordinaryRates: [.10, .12, .22, .24, .32, .35, .37],
@@ -32,6 +33,7 @@ export const TAX_RULES_2027 = {
   },
   niitRate: .038,
   earlyDistribution: { rate: .10, minAge: 59.5 },
+  hsa: { additionalTaxRate: .20, additionalTaxEndsAt: 65 },
   rmd: {
     // The final rules reserve 1959. The proposed age is 73; either reading
     // leaves this cohort below RMD age in 2027. Review before modeling 2032.

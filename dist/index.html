@@ -14,7 +14,7 @@
   <header class="topbar">
     <div class="top-inner">
       <a class="brand" href="#scenario"><span class="mark" aria-hidden="true"></span>Taxdaddy<span class="brand-caption">Retirement planner</span></a>
-      <nav aria-label="Dashboard"><a href="#scenario" id="scenario-nav">Scenario</a><a href="#growth" id="growth-nav">Growth</a><a href="#rules" id="rules-nav">Tax rules</a></nav>
+      <nav aria-label="Dashboard"><a href="#scenario" id="scenario-nav">Scenario</a><a href="#rules" id="rules-nav">Tax rules</a></nav>
       <span class="year" id="year-badge"></span>
       <label class="year-select" id="year-select" hidden><span>Tax year</span><select id="taxYear" data-key="taxYear"></select></label>
     </div>
@@ -23,14 +23,14 @@
   <main class="page">
     <section id="scenario" aria-labelledby="scenario-title">
       <header class="intro">
-        <div><h1 id="scenario-title">Retirement income planner</h1><p>Explore how your <span data-year></span> income choices affect federal tax and the cash you can spend.</p></div>
+        <div><h1 id="scenario-title">Retirement income planner</h1><p>Explore how your <span data-year></span> income choices affect federal tax and the cash you can spend. <span id="save-status" role="status"></span></p></div>
         <div class="actions"><button type="button" id="empty" class="button quiet">Start blank</button><button type="button" id="example" class="button">Load example</button></div>
       </header>
 
       <div class="dashboard">
         <div class="inputs">
           <section class="card input-card" aria-labelledby="household-title">
-            <header class="card-heading"><span class="section-icon person" aria-hidden="true"></span><div><h2 id="household-title">Household &amp; accounts</h2><p>Pair each December 31, <span data-year="-1"></span> balance with your total expected withdrawal for <span data-year></span>. Include any RMD in that total.</p></div></header>
+            <header class="card-heading"><span class="section-icon person" aria-hidden="true"></span><div><h2 id="household-title">Household &amp; accounts</h2><p>Pair each December 31, <span data-year="-1"></span> balance with your expected cash withdrawal for <span data-year></span>. Include the cash portion of any RMD. Enter direct IRA gifts to charity under RMDs &amp; Roth conversions. For RMD estimates, use one non-Roth workplace plan per owner.</p></div></header>
             <div id="household"></div>
           </section>
 
@@ -40,7 +40,7 @@
           </section>
 
           <section class="card input-card" aria-labelledby="withdrawal-title">
-            <header class="card-heading"><span class="section-icon account" aria-hidden="true"></span><div><h2 id="withdrawal-title">RMDs &amp; Roth conversions</h2><p>Specify how much of each planned withdrawal is an RMD and enter any direct IRA conversions.</p></div></header>
+            <header class="card-heading"><span class="section-icon account" aria-hidden="true"></span><div><h2 id="withdrawal-title">RMDs &amp; Roth conversions</h2><p>Enter the RMD portion of your cash withdrawals, direct IRA gifts to charity, and IRA-to-Roth conversions.</p></div></header>
             <div id="withdrawals"></div>
           </section>
         </div>
@@ -54,8 +54,8 @@
               <div><span>Estimated federal tax</span><strong id="tax"></strong></div>
             </div>
             <p class="summary-warning" id="summary-warning" hidden>Review the IRA RMD before relying on this conversion estimate.</p>
-            <div class="summary-foot">Excludes withholding, credits and state tax.</div>
-            <a class="summary-link" href="#withdrawal-tax-brackets">View withdrawal tax brackets</a>
+            <div class="summary-foot">Excludes withholding, credits and state tax. <span id="hsa-cash-note" hidden>Includes HSA withdrawals before medical spending.</span></div>
+            <a class="summary-link" href="#withdrawal-tax-brackets">View tax liability brackets</a>
           </div>
           <section class="card result-card" aria-labelledby="breakdown-title">
             <h2 id="breakdown-title">How the tax adds up</h2>
@@ -65,7 +65,7 @@
           </section>
           <section class="card result-card" aria-labelledby="conversion-title">
             <h2 id="conversion-title">Roth conversion impact</h2>
-            <p class="muted" id="conversion-copy">Change the conversion slider to compare against the same scenario with a $0 conversion.</p>
+            <p class="muted" id="conversion-copy">Tax owed is the additional federal tax attributable to the conversion.</p>
             <dl class="breakdown" id="comparison"></dl>
           </section>
           <section id="review" class="card result-card review" aria-labelledby="review-title" hidden>
@@ -77,40 +77,56 @@
       <section class="card input-card bracket-card" id="withdrawal-tax-brackets" aria-labelledby="bands-title">
         <header class="card-heading">
           <span class="section-icon income" aria-hidden="true"></span>
-          <div><h2 id="bands-title">Withdrawal tax brackets</h2><p>See which portions of each withdrawal or conversion fall in each federal ordinary bracket.</p></div>
+          <div><h2 id="bands-title">Tax liability brackets</h2><p>See how withdrawals and conversions fall into ordinary or long-term capital gains brackets.</p></div>
         </header>
         <div id="band-legend" class="chart-legend" aria-label="Ordinary tax rates"></div>
+        <div id="gains-legend" class="chart-legend" aria-label="Long-term capital gains tax rates" hidden></div>
         <div id="withdrawal-bands"></div>
-        <p class="assist chart-note">Each row uses the same dollar scale. The 0% color includes tax-free cash and ordinary income covered by deductions. The chart applies taxable Roth earnings, traditional IRA cash, 401(k) cash, then conversions in that order, using the final scenario’s deductions and taxable Social Security. Changing the order changes the colors by source. NIIT, penalties, and tax on qualified dividends are separate.</p>
+        <details class="inline-detail" id="band-details" hidden>
+          <summary>Amounts by tax bracket</summary>
+          <div class="table-wrap" id="band-table"></div>
+        </details>
+        <p class="assist chart-note">Each column uses the same dollar scale. The 0% color includes tax-free amounts and ordinary income covered by deductions. The chart allocates taxable amounts from left to right using the final scenario’s deductions and taxable Social Security. Brokerage shows principal and capital gains. Short-term gains use ordinary brackets. Long-term gains stack above ordinary income and other preferential income for this display. The tax total also includes modeled NIIT and additional taxes.</p>
+        <dl class="band-totals" aria-label="Scenario totals">
+          <div><dt>Total income (AGI)</dt><dd id="band-total-income"></dd></div>
+          <div><dt>Estimated federal tax liability</dt><dd id="band-total-tax"></dd></div>
+        </dl>
       </section>
-    </section>
-
-    <section id="growth" aria-labelledby="growth-title" hidden>
-      <header class="intro">
-        <div><h1 id="growth-title">Investment growth</h1><p>See how the cash withdrawals in your scenario affect future account balances.</p></div>
-      </header>
-      <div class="growth-layout">
-        <section class="card input-card" aria-labelledby="growth-input-title">
-          <header class="card-heading"><div><h2 id="growth-input-title">Growth assumptions</h2><p>Start with the balances and withdrawals on the Scenario tab.</p></div></header>
-          <div id="growth-controls"></div>
-          <details class="advanced">
-            <summary>Why start at 5%?</summary>
-            <p class="muted">Schwab’s 2026 outlook estimated 5.9% annualized for U.S. large-cap stocks and 4.8% for U.S. aggregate bonds over the next decade. A simple 40% stock and 60% bond blend is roughly 5.2% nominal. The 5% default is an illustration you can adjust to reflect your holdings, fees and expectations.</p>
-            <p class="muted"><a href="https://www.schwab.com/learn/story/schwabs-long-term-capital-market-expectations" target="_blank" rel="noreferrer">Schwab’s 2026 capital market expectations</a></p>
-          </details>
-        </section>
-        <section class="card input-card" aria-labelledby="growth-chart-title">
-          <header class="card-heading"><div><h2 id="growth-chart-title">Projected balances</h2><p>Nominal dollars. Both paths use the same investment return and Roth conversion. Cash savings are shown separately at 0% growth.</p></div></header>
-          <label class="field chart-account" for="growth-account"><span>Account view</span><select id="growth-account"></select></label>
-          <div class="growth-metrics" id="growth-metrics"></div>
-          <div class="chart-legend"><span><i class="line-key baseline" aria-hidden="true"></i>Without withdrawals</span><span><i class="line-key planned" aria-hidden="true"></i>With withdrawals</span></div>
-          <canvas id="growth-chart" role="img"></canvas>
-          <p class="assist" id="growth-effect"></p>
-          <p class="assist" id="growth-warning" hidden></p>
-          <p class="assist chart-note">The comparison isolates withdrawals, including any RMDs you entered. Future tax bills, RMD schedules, inflation, investment volatility, and future contributions are outside this projection. With annual withdrawals selected, the same dollar amount is requested each year until the account runs out.</p>
-          <details class="advanced"><summary>End balances by account</summary><div class="table-wrap" id="growth-table"></div></details>
-        </section>
-      </div>
+      <section id="growth" class="card input-card growth-card" aria-labelledby="growth-title">
+        <header class="card-heading">
+          <div><h2 id="growth-title">Investment growth</h2><p>Uses the Scenario balances and withdrawals above. Opening balances include any funded Roth conversion.</p></div>
+        </header>
+        <div id="growth-controls" role="group" aria-label="Growth assumptions"></div>
+        <details class="growth-source">
+          <summary>Why start at 5%?</summary>
+          <p class="muted">Schwab’s 2026 forecasts of 5.9% for U.S. large-cap stocks and 4.8% for U.S. aggregate bonds imply about 5.2% for a 40% stock, 60% bond mix. The 5% default is an illustration.</p>
+          <p class="muted"><a href="https://www.schwab.com/learn/story/schwabs-long-term-capital-market-expectations" target="_blank" rel="noreferrer">Schwab’s capital market expectations</a></p>
+        </details>
+        <div class="growth-metrics" id="growth-metrics"></div>
+        <div class="chart-legend"><span><i class="line-key baseline" aria-hidden="true"></i>Without withdrawals</span><span><i class="line-key planned" aria-hidden="true"></i>With withdrawals</span></div>
+        <div class="growth-plot">
+          <canvas id="growth-chart" role="img" tabindex="0" aria-describedby="growth-chart-help"></canvas>
+          <div id="growth-hover" class="growth-hover" aria-hidden="true" hidden>
+            <span id="growth-guide" class="growth-guide"></span>
+            <span id="growth-with-dot" class="growth-dot planned"></span>
+            <span id="growth-without-dot" class="growth-dot baseline"></span>
+            <div id="growth-readout" class="growth-readout">
+              <strong id="growth-readout-date"></strong>
+              <span><i class="line-key planned"></i>With withdrawals <strong id="growth-readout-with"></strong></span>
+              <span><i class="line-key baseline"></i>Without withdrawals <strong id="growth-readout-without"></strong></span>
+            </div>
+          </div>
+        </div>
+        <p class="visually-hidden" id="growth-chart-help">Use the arrow keys to step through projected years.</p>
+        <p class="visually-hidden" id="growth-keyboard-readout" aria-live="polite"></p>
+        <p class="assist" id="growth-effect"></p>
+        <p class="assist" id="growth-warning" hidden></p>
+        <details class="advanced">
+          <summary>End balances by account and projection assumptions</summary>
+          <div class="table-wrap" id="growth-table"></div>
+          <p class="assist chart-note">Both paths transfer the funded conversion from the traditional IRA to the Roth IRA at the start of the projection. The model reserves IRA cash withdrawals and direct gifts to charity when funding the conversion, then applies both at year-end. The investment total includes HSAs. Amounts are in nominal dollars. Cash savings use 0% growth. Repeated withdrawals use the same dollar amounts each year. The projection excludes future taxes, new RMD schedules, inflation, market volatility, and contributions.</p>
+        </details>
+      </section>
     </section>
 
     <section id="rules" aria-labelledby="rules-title" hidden>
@@ -126,13 +142,22 @@
         <section class="card input-card methodology">
           <h2>How the model treats retirement income</h2>
           <h3>Required minimum distributions</h3>
-          <p>The estimate uses the IRS Uniform Lifetime Table for an owner who has reached their applicable RMD age, using each account’s December 31, <span data-year="-1"></span> balance. Traditional, SEP and SIMPLE IRA minimums can be combined for the same owner. Enter each employer plan separately outside this planner if you have multiple plans, since one plan’s withdrawal generally cannot satisfy another’s minimum. Roth IRAs and designated Roth 401(k) balances have no lifetime minimum for the original owner. A current-employer plan may allow a delay while you are working, subject to the ownership rule.</p>
-          <p>The first RMD can generally be delayed to April 1 of the following year. Add any prior-year minimum due in <span data-year></span> in the advanced fields. IRA cash withdrawals from the covered IRAs count toward their RMD once, and an RMD is ineligible for conversion. A shortfall can incur a <span id="rmd-excise"></span> excise tax, reduced to <span id="rmd-correction"></span> if corrected on time, and a waiver can be available. The projection shows the shortfall separately. Confirm inherited-account minimums, the joint-life table when a sole-beneficiary spouse is more than 10 years younger, and multiple workplace plans separately. An eligible direct qualified charitable distribution from an IRA at age <span id="qcd-age"></span> or older can count toward the RMD and be excluded from income. The <span data-year></span> limit is <span id="qcd-limit"></span> per eligible owner. The calculator does not model those transfers.</p>
+          <p>The estimate uses the IRS Uniform Lifetime Table for an owner who has reached their applicable RMD age, using each account’s December 31, <span data-year="-1"></span> balance. Traditional, SEP and SIMPLE IRA minimums can be combined for the same owner. The planner estimates the RMD for one non-Roth 401(k) or 403(b) per owner. Calculate the RMD for each account separately if you have multiple plans. Some pre-1987 403(b) balances require a separate calculation. Roth IRAs and designated Roth 401(k) and 403(b) balances have no lifetime minimum for the original owner. A current-employer plan may allow a delay while you are working, subject to the ownership rule.</p>
+          <p>The first RMD can generally be delayed to April 1 of the following year. Add any prior-year minimum due in <span data-year></span> in the advanced fields. IRA cash withdrawals and direct charitable transfers count toward the IRA minimum once. An RMD is ineligible for conversion. A shortfall can incur a <span id="rmd-excise"></span> excise tax, reduced to <span id="rmd-correction"></span> if corrected on time, and a waiver can be available. The projection shows the shortfall separately. Confirm inherited-account minimums, the joint-life table when a sole-beneficiary spouse is more than 10 years younger, and multiple workplace plans separately.</p>
           <p><a href="https://www.irs.gov/retirement-plans/retirement-plan-and-ira-required-minimum-distributions-faqs" target="_blank" rel="noreferrer">IRS RMD FAQs</a> · <a href="https://www.irs.gov/publications/p590b" target="_blank" rel="noreferrer">IRS Publication 590-B and lifetime tables</a></p>
 
+          <h3>Qualified charitable distributions</h3>
+          <p>For a QCD, an eligible IRA’s trustee must pay an eligible charity directly when you are at least <span id="qcd-age"></span>. The <span data-year></span> exclusion limit is <span id="qcd-limit"></span> per eligible owner. The model applies otherwise taxable IRA funds first and reduces the exclusion by any unused deductible IRA contributions you enter from the IRS QCD Adjustment Worksheet. The entire transfer reduces the IRA balance and stays out of cash available. The model adds any taxable portion to income. Leave excluded QCD amounts out of itemized deductions.</p>
+          <p>Enter transfers from your own eligible traditional IRA or eligible inactive SEP or SIMPLE IRA. Current contributions to a SEP or SIMPLE IRA can make it ineligible. The calculator covers direct gifts to eligible charities. Confirm eligibility, charitable substantiation, and any deductible remainder separately.</p>
+          <p><a href="https://www.irs.gov/publications/p590b" target="_blank" rel="noreferrer">IRS Publication 590-B and QCD worksheet</a> · <a id="qcd-source" target="_blank" rel="noreferrer"></a></p>
+
+          <h3>Health savings account withdrawals</h3>
+          <p>Qualified medical withdrawals are federally tax-free when used for eligible expenses incurred after the HSA was established and previously unreimbursed. The other withdrawals increase ordinary income. Before age <span id="hsa-age"></span>, taxable withdrawals generally incur an additional <span id="hsa-tax-rate"></span> tax. The calculator uses age at year-end as the default. Use HSA additional tax details for taxable withdrawals before your 65th birthday in the year you turn 65 or for a disability exception. Exclude tax-free HSA reimbursements from itemized medical deductions.</p>
+          <p><a href="https://www.irs.gov/publications/p969" target="_blank" rel="noreferrer">IRS Publication 969</a> · <a href="https://www.irs.gov/instructions/i8889" target="_blank" rel="noreferrer">IRS Form 8889 instructions</a></p>
+
           <h3>Traditional withdrawals and IRA-to-Roth conversions</h3>
-          <p>Pretax cash distributions and the taxable portion of a direct Roth conversion are ordinary income. A conversion moves money between accounts and raises income for tax purposes only. For an IRA with nondeductible basis, enter each owner’s available Form 8606 basis and the combined projected December 31, <span data-year></span> value of their traditional, SEP and SIMPLE IRAs before the withdrawals and conversion you are modeling. The planner treats the cash flows as year-end events and applies the same pro rata denominator as you move the sliders. For amounts you already know, enter the combined year-end balance plus the applicable distributions and conversions. Confirm Form 8606 treatment for QCDs, outstanding rollovers, recharacterizations or distributions with special exclusions.</p>
-          <p>Employer-plan distributions use the taxable percentage you enter. Direct pre-tax plan-to-Roth rollovers have separate plan and reporting rules, so this model’s conversion field is for eligible IRA money only. A conversion can increase taxable Social Security, move qualified dividends into a higher tax band or reduce the senior deduction. Most completed Roth conversions cannot be undone by recharacterizing them.</p>
+          <p>Pretax cash distributions and the taxable portion of a direct Roth conversion are ordinary income. A conversion moves money between accounts and raises income for tax purposes only. For an IRA with nondeductible basis, enter each owner’s available Form 8606 basis and the combined projected December 31, <span data-year></span> value of their traditional, SEP and SIMPLE IRAs before the withdrawals and conversion you are modeling. This tax calculation uses the same pro rata denominator as you move the sliders. For amounts you already know, enter the combined year-end balance plus the applicable distributions and conversions. Confirm Form 8606 treatment for QCDs, outstanding rollovers, recharacterizations or distributions with special exclusions.</p>
+          <p>Regular 401(k) and 403(b) cash distributions use the taxable percentage you enter. Pretax amounts are generally ordinary income and qualified Roth distributions are tax-free. Direct pre-tax plan-to-Roth rollovers have separate plan and reporting rules, so this model’s conversion field is for eligible IRA money only. A conversion can increase taxable Social Security, move qualified dividends into a higher tax band or reduce the senior deduction. Most completed Roth conversions cannot be undone by recharacterizing them.</p>
           <p><a href="https://www.irs.gov/instructions/i8606" target="_blank" rel="noreferrer">IRS Form 8606 instructions</a> · <a href="https://www.irs.gov/taxtopics/tc413" target="_blank" rel="noreferrer">IRS rollover rules</a></p>
 
           <h3>Roth cash and early withdrawals</h3>
@@ -146,9 +171,9 @@
           <p><a href="https://www.irs.gov/taxtopics/tc410" target="_blank" rel="noreferrer">IRS pension tax rules</a> · <a href="https://www.irs.gov/publications/p915" target="_blank" rel="noreferrer">IRS Social Security worksheet</a> · <a href="https://www.irs.gov/pub/irs-pdf/f1040s1a.pdf" target="_blank" rel="noreferrer">IRS Schedule 1-A</a></p>
 
           <h3>Dividends, interest and savings</h3>
-          <p>Use box 1b of Form 1099-DIV for qualified dividends and box 1a minus 1b for nonqualified dividends. Qualified dividends and eligible net long-term gains stack above ordinary taxable income at the applicable preferential rates. Taxable interest and nonqualified dividends use ordinary rates. Savings principal is cash without new income. Dividends and gains can be taxable even if reinvested. The reinvestment field reduces available cash only. If you sell taxable investments, enter net gains and enter any separately released principal in the taxable brokerage principal field.</p>
+          <p>Use box 1b of Form 1099-DIV for qualified dividends and box 1a minus 1b for nonqualified dividends. Qualified dividends and eligible net long-term gains stack above ordinary taxable income at the applicable preferential rates. Taxable interest and nonqualified dividends use ordinary rates. Savings principal is cash without new income. Dividends and gains can be taxable even if reinvested. The reinvestment field reduces available cash only. The planner assumes the full brokerage withdrawal is long-term gain by default. Open Taxable brokerage gain details to enter net long-term and short-term amounts for sales with principal or a mix of holding periods. Opening the details keeps the default until you enter an amount. Net short-term gains use ordinary rates. Use the separate Annual income field for other eligible net long-term gains.</p>
           <p>The model estimates the <span id="niit-rate"></span> net investment income tax (NIIT) on the lesser of modeled investment income or AGI above the applicable threshold. Qualified-plan distributions and conversions can raise the income used for the threshold. This simplified calculation assumes no investment expense deductions or foreign-income MAGI adjustments.</p>
-          <p><a href="https://www.irs.gov/publications/p550" target="_blank" rel="noreferrer">IRS Investment Income and Expenses</a> · <a href="https://www.irs.gov/taxtopics/tc559" target="_blank" rel="noreferrer">IRS net investment income tax</a></p>
+          <p><a href="https://www.irs.gov/publications/p550" target="_blank" rel="noreferrer">IRS Investment Income and Expenses</a> · <a href="https://www.irs.gov/taxtopics/tc409" target="_blank" rel="noreferrer">IRS capital gains and losses</a> · <a href="https://www.irs.gov/taxtopics/tc559" target="_blank" rel="noreferrer">IRS net investment income tax</a></p>
 
           <h3>Limits of the estimate</h3>
           <p>The calculator covers U.S. federal regular income tax, modeled NIIT, and user-entered exposure to the early-distribution tax. It uses continuous bracket math. IRS tax-table rounding, alternative minimum tax, credits, payroll tax, withholding, estimated payments, capital-loss carryovers, special capital gains rates, RMD excise tax, and state taxes are outside the calculation. The itemized field accepts a total after applicable limits. It does not calculate those limits or auto-apply special deductions.</p>
@@ -158,6 +183,7 @@
       </div>
     </section>
   </main>
+  <div id="band-tooltip" class="band-tooltip" role="tooltip" hidden></div>
   <aside class="mobile-projection" id="mobile-projection" aria-label="Current projection">
     <div><span>After-tax cash</span><strong id="mobile-net"></strong></div>
     <div><span>Federal tax</span><strong id="mobile-tax"></strong></div>

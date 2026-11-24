@@ -5,15 +5,16 @@ export const GROWTH_DEFAULTS = Object.freeze({ rate: 5, years: 20, repeat: false
 function investmentAccounts(scenario) {
   const accounts = [{
     id: 'brokerage', name: 'Taxable brokerage', opening: scenario.brokerageBalance,
-    withdrawal: scenario.brokeragePrincipal + scenario.brokerageIncomeDraw,
+    withdrawal: scenario.brokerageWithdrawal,
   }, { id: 'savings', name: 'Cash savings', opening: scenario.savingsBalance, withdrawal: scenario.savingsDraw }];
   householdOwners(scenario).forEach((owner, index) => {
     const label = scenario.status !== 'joint' ? '' : index === 0 ? 'Your ' : 'Spouse’s ';
     accounts.push(
-      { id: `ira${index}`, name: label + 'Traditional IRA', opening: owner.iraBalance, withdrawal: owner.iraRmd + owner.iraExtra, conversion: owner.conversion, destination: `roth${index}` },
-      { id: `plan${index}`, name: label + 'Non-Roth 401(k)', opening: owner.planBalance, withdrawal: owner.planRmd + owner.planExtra },
+      { id: `ira${index}`, name: label + 'Traditional IRA', opening: owner.iraBalance, withdrawal: owner.iraRmd + owner.iraExtra + (owner.iraCharity ?? 0), conversion: owner.conversion, destination: `roth${index}` },
+      { id: `plan${index}`, name: label + 'Non-Roth 401(k) / 403(b)', opening: owner.planBalance, withdrawal: owner.planRmd + owner.planExtra },
       { id: `roth${index}`, name: label + 'Roth IRA', opening: owner.rothBalance, withdrawal: owner.rothCash },
-      { id: `rothPlan${index}`, name: label + 'Roth 401(k)', opening: owner.rothPlanBalance, withdrawal: owner.rothPlanCash },
+      { id: `rothPlan${index}`, name: label + 'Roth 401(k) / 403(b)', opening: owner.rothPlanBalance, withdrawal: owner.rothPlanCash },
+      { id: `hsa${index}`, name: label + 'HSA', opening: owner.hsaBalance ?? 0, withdrawal: owner.hsaWithdrawal ?? 0 },
     );
   });
   return accounts;
@@ -30,53 +31,48 @@ export function projectGrowth(scenario, { rate, years, repeat } = GROWTH_DEFAULT
     throw new RangeError('Growth requires a valid annual rate and 1 to 50 years.');
   }
   const accounts = investmentAccounts(scenario);
-  const rothAccounts = accounts.filter(account => account.id.startsWith('roth'));
-  const otherAccounts = accounts.filter(account => !account.id.startsWith('roth'));
-  const conversions = accounts.filter(account => account.conversion > 0);
   const opening = Object.fromEntries(accounts.map(account => [account.id, account.opening]));
   const planned = { ...opening };
-  const baseline = { ...opening };
+  // Both paths fund the same opening conversion after reserving the first
+  // year's IRA withdrawals and charitable transfers.
+  let unconverted = 0;
+  for (const { id, destination, conversion, withdrawal } of accounts) {
+    if (!conversion) continue;
+    const transferred = Math.min(conversion, Math.max(0, opening[id] - withdrawal));
+    planned[id] -= transferred;
+    planned[destination] += transferred;
+    unconverted += conversion - transferred;
+  }
+  const baseline = { ...planned };
   const withdrawn = Object.fromEntries(accounts.map(({ id }) => [id, 0]));
   const unmet = { ...withdrawn };
-  function pay(account) {
+  const depletedAt = {};
+  function pay(account, year) {
     const paid = debit(planned, account.id, account.withdrawal);
     withdrawn[account.id] += paid;
     unmet[account.id] += account.withdrawal - paid;
+    if (account.withdrawal > 0 && planned[account.id] < .005) depletedAt[account.id] ??= year;
   }
   const investments = accounts.filter(account => account.id !== 'savings');
   const sum = balances => investments.reduce((value, account) => value + balances[account.id], 0);
   const points = [];
-  const snapshot = year => ({
-    year,
+  const snapshot = (year, isOpening = false) => ({
+    year, isOpening,
     planned: { ...planned, total: sum(planned) },
     baseline: { ...baseline, total: sum(baseline) },
   });
-  points.push(snapshot(scenario.taxYear - 1));
-  let unconverted = 0;
+  points.push(snapshot(scenario.taxYear, true));
   for (let offset = 0; offset < years; offset++) {
+    const year = scenario.taxYear + offset;
     for (const { id } of investments) {
       planned[id] *= 1 + rate / 100;
       baseline[id] *= 1 + rate / 100;
     }
-    if (offset === 0 || repeat) {
-      // Apply IRA cash distributions before the conversion. Roth cash comes out
-      // after the transfer, so the remaining Roth balance includes converted dollars.
-      otherAccounts.forEach(pay);
-      if (offset === 0) {
-        for (const { id, destination, conversion } of conversions) {
-          const transferred = debit(planned, id, conversion);
-          planned[destination] += transferred;
-          baseline[id] -= transferred;
-          baseline[destination] += transferred;
-          unconverted += conversion - transferred;
-        }
-      }
-      rothAccounts.forEach(pay);
-    }
-    points.push(snapshot(scenario.taxYear + offset));
+    if (offset === 0 || repeat) accounts.forEach(account => pay(account, year));
+    points.push(snapshot(year));
   }
   return {
     accounts, points, withdrawn: { ...withdrawn, total: sum(withdrawn) },
-    unmet: { ...unmet, total: sum(unmet) }, unconverted,
+    unmet: { ...unmet, total: sum(unmet) }, depletedAt, unconverted,
   };
 }
