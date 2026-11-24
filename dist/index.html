@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Estimate 2027 U.S. federal retirement income tax and spendable cash with a private, browser-based calculator.">
+  <meta name="color-scheme" content="light">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'none'; style-src 'self'; script-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <title>Retirement Income Planner | Taxdaddy</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script type="module" src="./app.mjs"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="top-inner">
+      <a class="brand" href="#scenario"><span class="mark" aria-hidden="true"></span>Taxdaddy<span class="brand-caption">Retirement planner</span></a>
+      <nav aria-label="Dashboard"><a href="#scenario" id="scenario-nav">Scenario</a><a href="#rules" id="rules-nav">Tax rules</a></nav>
+      <span class="year">Tax year 2027</span>
+    </div>
+  </header>
+
+  <main class="page">
+    <section id="scenario" aria-labelledby="scenario-title">
+      <header class="intro">
+        <div><h1 id="scenario-title">Retirement income planner</h1><p>Explore how your 2027 income choices affect federal tax and the cash you can spend.</p></div>
+        <div class="actions"><button type="button" id="empty" class="button quiet">Start blank</button><button type="button" id="example" class="button">Load example</button></div>
+      </header>
+
+      <div class="dashboard">
+        <div class="inputs">
+          <section class="card input-card" aria-labelledby="household-title">
+            <header class="card-heading"><span class="section-icon person" aria-hidden="true"></span><div><h2 id="household-title">Household &amp; balances</h2><p>Start with your filing status and December 31, 2026 balances.</p></div></header>
+            <div id="household"></div>
+          </section>
+
+          <section class="card input-card" aria-labelledby="income-title">
+            <header class="card-heading"><span class="section-icon income" aria-hidden="true"></span><div><h2 id="income-title">Income &amp; savings</h2><p>Enter annual amounts. Type a value for precision or move a slider to explore.</p></div></header>
+            <div id="income"></div>
+          </section>
+
+          <section class="card input-card" aria-labelledby="withdrawal-title">
+            <header class="card-heading"><span class="section-icon account" aria-hidden="true"></span><div><h2 id="withdrawal-title">Withdrawals &amp; Roth conversions</h2><p>Set planned minimum distributions, extra cash withdrawals, and direct IRA conversions.</p></div></header>
+            <div id="withdrawals"></div>
+          </section>
+        </div>
+
+        <aside class="results" aria-label="Federal projection">
+          <div class="summary">
+            <div class="summary-header"><h2>2027 projection</h2><span>U.S. federal</span></div>
+            <div class="summary-main"><span>Spendable cash after federal tax</span><strong id="net"></strong></div>
+            <div class="summary-metrics">
+              <div><span>Cash available before tax</span><strong id="cash"></strong></div>
+              <div><span>Estimated federal tax</span><strong id="tax"></strong></div>
+            </div>
+            <p class="summary-warning" id="summary-warning" hidden>Review the IRA RMD before relying on this conversion estimate.</p>
+            <div class="summary-foot">Excludes withholding, credits and state tax.</div>
+          </div>
+          <section class="card result-card" aria-labelledby="breakdown-title">
+            <h2 id="breakdown-title">How the tax adds up</h2>
+            <div class="income-bar" role="img" id="income-bar"></div>
+            <dl class="breakdown" id="breakdown"></dl>
+            <details class="inline-detail"><summary>Federal tax details</summary><dl class="breakdown" id="tax-detail"></dl></details>
+          </section>
+          <section class="card result-card" aria-labelledby="conversion-title">
+            <h2 id="conversion-title">Roth conversion impact</h2>
+            <p class="muted" id="conversion-copy">Change the conversion slider to compare against the same scenario with a $0 conversion.</p>
+            <dl class="breakdown" id="comparison"></dl>
+          </section>
+          <section id="review" class="card result-card review" aria-labelledby="review-title" hidden>
+            <h2 id="review-title">Review this scenario</h2><ul id="issues"></ul>
+          </section>
+          <p class="privacy">Your entries stay in this tab and clear when you reload or close it. <a href="#rules">See tax rules and assumptions</a></p>
+        </aside>
+      </div>
+    </section>
+
+    <section id="rules" aria-labelledby="rules-title" hidden>
+      <header class="intro"><div><h1 id="rules-title">2027 tax rules</h1><p>Published federal figures, source links, and the assumptions behind your projection.</p></div></header>
+      <div class="rules-layout">
+        <section class="card input-card">
+          <h2>Federal brackets &amp; deductions</h2>
+          <p>Ordinary rates apply to successive slices of taxable ordinary income. The selected filing status also determines the standard deduction and qualified-dividend thresholds.</p>
+          <div class="table-wrap" id="bracket-rules"></div>
+          <p><a href="https://www.irs.gov/irb/2026-48_IRB" target="_blank" rel="noreferrer">IRS Rev. Proc. 2026-35, sections 3.01, 3.03 and 3.15</a></p>
+        </section>
+
+        <section class="card input-card methodology">
+          <h2>How the model treats retirement income</h2>
+          <h3>Required minimum distributions</h3>
+          <p>The estimate uses the IRS Uniform Lifetime Table for an owner age 73 or older in 2027, with each account’s December 31, 2026 balance. Traditional, SEP and SIMPLE IRA minimums can be combined for the same owner. Enter each employer plan separately outside this planner if you have multiple plans, since one plan’s withdrawal generally cannot satisfy another’s minimum. Roth IRAs and designated Roth 401(k) balances have no lifetime minimum for the original owner. A current-employer plan may allow a delay while you are working, subject to the ownership rule.</p>
+          <p>The first RMD can generally be delayed to April 1 of the following year. Add any prior-year minimum due in 2027 in the advanced fields. IRA cash withdrawals from the covered IRAs count toward their RMD once, and an RMD is ineligible for conversion. A shortfall can incur a 25% excise tax, reduced to 10% if corrected on time, and a waiver can be available. The projection shows the shortfall separately. Confirm inherited-account minimums, the joint-life table when a sole-beneficiary spouse is more than 10 years younger, and multiple workplace plans separately. An eligible direct qualified charitable distribution from an IRA at age 70½ or older can count toward the RMD and be excluded from income. The 2027 limit is $114,000 per eligible owner. The calculator does not model those transfers.</p>
+          <p><a href="https://www.irs.gov/retirement-plans/retirement-plan-and-ira-required-minimum-distributions-faqs" target="_blank" rel="noreferrer">IRS RMD FAQs</a> · <a href="https://www.irs.gov/publications/p590b" target="_blank" rel="noreferrer">IRS Publication 590-B and lifetime tables</a></p>
+
+          <h3>Traditional withdrawals and IRA-to-Roth conversions</h3>
+          <p>Pretax cash distributions and the taxable portion of a direct Roth conversion are ordinary income. A conversion moves money between accounts and raises income for tax purposes only. For an IRA with nondeductible basis, enter each owner’s available Form 8606 basis and the combined projected December 31, 2027 value of their traditional, SEP and SIMPLE IRAs before the withdrawals and conversion you are modeling. The planner treats the cash flows as year-end events and applies the same pro rata denominator as you move the sliders. For amounts you already know, enter the combined year-end balance plus the applicable distributions and conversions. Confirm Form 8606 treatment for QCDs, outstanding rollovers, recharacterizations or distributions with special exclusions.</p>
+          <p>Employer-plan distributions use the taxable percentage you enter. Direct pre-tax plan-to-Roth rollovers have separate plan and reporting rules, so this model’s conversion field is for eligible IRA money only. A conversion can increase taxable Social Security, move qualified dividends into a higher tax band or reduce the senior deduction. Most completed Roth conversions cannot be undone by recharacterizing them.</p>
+          <p><a href="https://www.irs.gov/instructions/i8606" target="_blank" rel="noreferrer">IRS Form 8606 instructions</a> · <a href="https://www.irs.gov/taxtopics/tc413" target="_blank" rel="noreferrer">IRS rollover rules</a></p>
+
+          <h3>Roth cash and early withdrawals</h3>
+          <p>Qualified Roth withdrawals are tax-free. For a nonqualified withdrawal, enter the taxable earnings and, if applicable, the separate amount subject to the 10% additional tax. Roth IRAs order regular contributions first, then conversions in order, then earnings. Converted amounts can have a separate five-year recapture period. Nonqualified designated Roth plan withdrawals generally prorate contributions and earnings. Exact tax treatment depends on the account’s history and the owner’s eligibility at the time of withdrawal.</p>
+          <p>Many otherwise taxable withdrawals before age 59½ face an additional 10% tax unless an exception applies. The age-55 separation exception can apply to a qualifying workplace plan and is unavailable for IRAs. Verify any additional tax under Form 5329, including special SIMPLE IRA rates, before using the penalty field.</p>
+          <p><a href="https://www.irs.gov/publications/p590b" target="_blank" rel="noreferrer">IRS Publication 590-B</a> · <a href="https://www.irs.gov/retirement-plans/plan-participant-employee/retirement-topics-exceptions-to-tax-on-early-distributions" target="_blank" rel="noreferrer">IRS early distribution exceptions</a></p>
+
+          <h3>Pensions, Social Security and senior deductions</h3>
+          <p>A pension is generally taxable except for any recovery of after-tax cost. Enter the taxable share from the plan or Form 1099-R if known. The Social Security calculation uses provisional income, which includes one-half of benefits, other modeled taxable income, and tax-exempt interest. Up to 85% of benefits may be included in taxable income. If filing separately, indicate whether you lived with your spouse at any time during the year.</p>
+          <p>The additional standard deduction for age 65 or blindness is $2,100 per qualifying condition for single and head of household filers and $1,700 for married filers and qualifying surviving spouses. The separate enhanced senior deduction starts at $6,000 per eligible person with a valid Social Security number. Each eligible person’s amount falls by 6% of household modified AGI above $75,000, or $150,000 on a joint return. Married taxpayers must file jointly for the enhancement. The model uses AGI as modified AGI and assumes you meet the filing-status rules.</p>
+          <p><a href="https://www.irs.gov/taxtopics/tc410" target="_blank" rel="noreferrer">IRS pension tax rules</a> · <a href="https://www.irs.gov/publications/p915" target="_blank" rel="noreferrer">IRS Social Security worksheet</a> · <a href="https://www.irs.gov/pub/irs-pdf/f1040s1a.pdf" target="_blank" rel="noreferrer">IRS Schedule 1-A</a></p>
+
+          <h3>Dividends, interest and savings</h3>
+          <p>Use box 1b of Form 1099-DIV for qualified dividends and box 1a minus 1b for nonqualified dividends. Qualified dividends and eligible net long-term gains stack above ordinary taxable income at 0%, 15% or 20%. Taxable interest and nonqualified dividends use ordinary rates. Savings principal is cash without new income. Dividends and gains can be taxable even if reinvested. The reinvestment field reduces available cash only. If you sell taxable investments, enter net gains and include any separately released principal in your cash draw.</p>
+          <p>The model estimates the 3.8% net investment income tax (NIIT) on the lesser of modeled investment income or AGI above the applicable threshold. Qualified-plan distributions and conversions can raise the income used for the threshold. This simplified calculation assumes no investment expense deductions or foreign-income MAGI adjustments.</p>
+          <p><a href="https://www.irs.gov/publications/p550" target="_blank" rel="noreferrer">IRS Investment Income and Expenses</a> · <a href="https://www.irs.gov/taxtopics/tc559" target="_blank" rel="noreferrer">IRS net investment income tax</a></p>
+
+          <h3>Limits of the estimate</h3>
+          <p>The calculator covers U.S. federal regular income tax, modeled NIIT, and user-entered exposure to the 10% early-distribution tax. It uses continuous bracket math. IRS tax-table rounding, alternative minimum tax, credits, payroll tax, withholding, estimated payments, capital-loss carryovers, special capital gains rates, RMD excise tax, and state taxes are outside the calculation. The itemized field accepts a total after applicable limits. It does not calculate those limits or auto-apply special deductions.</p>
+          <p>Higher 2027 income can affect 2029 Medicare income-related premiums under the usual two-year lookback. The dashboard leaves premiums and health-insurance subsidy changes out of the cash projection. Compare plan documents and the applicable tax forms when an amount depends on basis, withdrawal timing or an exception.</p>
+          <p><a href="https://www.irs.gov/instructions/i1040gi" target="_blank" rel="noreferrer">IRS Form 1040 instructions and tax worksheets</a> · <a href="https://www.ssa.gov/benefits/medicare/medicare-premiums.html" target="_blank" rel="noreferrer">SSA Medicare premiums and income lookback</a></p>
+        </section>
+      </div>
+    </section>
+  </main>
+  <aside class="mobile-projection" id="mobile-projection" aria-label="Current projection">
+    <div><span>After-tax cash</span><strong id="mobile-net"></strong></div>
+    <div><span>Federal tax</span><strong id="mobile-tax"></strong></div>
+  </aside>
+</body>
+</html>
