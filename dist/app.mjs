@@ -147,7 +147,7 @@ function balances() {
   return activeOwners().map((owner, i) => {
     const fields = (key, label, options) => numberInput(`${i}.${key}`, label, owner[key], options);
     const hsaDetails = `<div class="field-grid">
-      ${fields('hsaMedical', 'For qualified medical expenses', { hint: 'Include eligible payments or reimbursements. The rest of the withdrawal is taxable.' })}
+      ${fields('hsaMedical', 'Qualified medical expenses paid or reimbursed from the HSA', { hint: 'This portion of your withdrawal is excluded from federal taxable income. Keep these expenses out of your itemized deductions. The remaining withdrawal is generally taxable.' })}
     </div>
     <details class="inline-detail"><summary>HSA additional tax details</summary>
       ${numberInput(`${i}.hsaPenaltyBase`, 'Taxable amount subject to the additional tax', owner.hsaPenaltyBase ?? '', {
@@ -230,7 +230,7 @@ function cashChart(calc) {
     ['Retirement withdrawals', calc.traditionalCash + calc.roth],
     ['Investment income received', calc.investments - calc.reinvested + state.exempt],
     ['Other taxable income & principal withdrawals', state.wages + state.savingsDraw + calc.brokerage.principal],
-    ...(calc.hsa.gross ? [['HSA withdrawals', calc.hsa.gross]] : []),
+    ...(calc.hsa.gross ? [['HSA cash withdrawn (before medical spending)', calc.hsa.gross]] : []),
   ];
   const bar = $('income-bar');
   bar.setAttribute('aria-label', 'Cash by source. ' + cash.map(([name, amount]) => `${name} ${money(amount)}`).join('. '));
@@ -310,7 +310,8 @@ function project() {
     row('Net investment income tax', money(calc.niit)),
     row('Early-distribution additional tax', money(calc.early)),
     ...(calc.hsa.gross ? [
-      row('Taxable HSA withdrawals', money(calc.hsa.taxable)),
+      row('HSA medical withdrawals excluded from income', money(calc.hsa.medical)),
+      row('Taxable nonmedical HSA withdrawals', money(calc.hsa.taxable)),
       row('HSA additional tax', money(calc.hsa.additionalTax)),
     ] : []),
     ...(calc.charity.gross ? [
@@ -534,7 +535,7 @@ function renderWithdrawalBands(calc) {
     ? '<strong>Long-term gains</strong>' + rules.preferentialRates.map((rate, index) => legendEntry(percent.format(rate), gainHint(rate, index), `gain-${index}`)).join('')
     : '';
   if (!rows.length) {
-    chart.innerHTML = '<p class="muted">Enter a withdrawal, direct IRA gift, or conversion to show its tax bands.</p>';
+    chart.innerHTML = '<p class="muted">Enter Social Security benefits, a withdrawal, a direct IRA gift, or a conversion to show its tax bands.</p>';
     $('band-table').replaceChildren();
     return;
   }
@@ -544,7 +545,7 @@ function renderWithdrawalBands(calc) {
   const step = [1, 2, 2.5, 5, 10].map(size => size * magnitude).find(size => size * 4 >= highest);
   const scale = 4 * step;
   const ticks = [4, 3, 2, 1, 0].map(position => `<span>${money(position * step)}</span>`).join('');
-  chart.innerHTML = `<div class="band-scroll" tabindex="0" role="region" aria-label="Stacked withdrawal columns">
+  chart.innerHTML = `<div class="band-scroll" tabindex="0" role="region" aria-label="Tax liability brackets by source">
     <div class="band-chart-grid">
       <div class="band-axis" aria-hidden="true">${ticks}</div>
       <div class="band-columns"></div>
@@ -560,6 +561,8 @@ function renderWithdrawalBands(calc) {
       <div class="band-caption"><strong>${money(gross)}</strong><span>${name}</span></div>`;
     const track = column.querySelector('.band-stack');
     const amounts = [];
+    const spansMultipleBands = bands.filter(({ amount }) => amount >= .005).length > 1;
+    const totalLabel = money(gross);
     for (const [index, { rate, amount, preferentialIndex, shortTerm }] of bands.entries()) {
       if (amount < .005) continue;
       const segment = document.createElement('span');
@@ -567,16 +570,20 @@ function renderWithdrawalBands(calc) {
       const rateLabel = percent.format(rate);
       const bracketLabel = isGain ? `${rateLabel} LTCG` : shortTerm ? `${rateLabel} STCG` : rateLabel;
       const range = isGain ? gainsRanges[preferentialIndex] : ranges[index];
-      const hint = isGain ? gainHint(rate, preferentialIndex) : bracketHint(rate, index);
+      const hint = name === 'HSA withdrawals' && index === 0 && calc.hsa.medical > 0
+        ? `0% · ${money(calc.hsa.medical)} excluded from income for qualified medical expenses${amount > calc.hsa.medical ? '; the rest of this band is covered by deductions' : ''}`
+        : isGain ? gainHint(rate, preferentialIndex) : bracketHint(rate, index);
       const sourceNote = shortTerm ? ' in short-term gains' : '';
       segment.className = isGain ? `gain-${preferentialIndex}` : `rate-${colorIndex(index)}`;
       segment.style.height = `${100 * amount / scale}%`;
-      segment.dataset.bandHint = `${hint}. ${money(amount)}${sourceNote} of the ${money(gross)} total.`;
+      const amountLabel = money(amount);
+      const totalNote = spansMultipleBands && amountLabel !== totalLabel ? ` of ${totalLabel} total` : '';
+      segment.dataset.bandHint = `${hint}. ${amountLabel}${sourceNote}${totalNote}.`;
       amounts.push(`${money(amount)} at ${bracketLabel}`);
       track.append(segment);
       tableRows.push(`<tr><th scope="row">${name}</th><td>${bracketLabel}</td><td>${range}</td><td>${money(amount)}</td></tr>`);
     }
-    track.setAttribute('aria-label', `${name}, ${money(gross)} total. ${amounts.join(', ')}`);
+    track.setAttribute('aria-label', `${name}, ${spansMultipleBands ? `${totalLabel} total. ` : ''}${amounts.join(', ')}`);
     columns.append(column);
   }
   $('band-table').innerHTML = `<table><thead><tr><th scope="col">Source</th><th scope="col">Federal bracket</th><th scope="col">Taxable income range</th><th scope="col">Amount</th></tr></thead>

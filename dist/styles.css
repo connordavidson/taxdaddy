@@ -33,6 +33,7 @@ nav a { display: grid; align-items: center; border-bottom: 2px solid transparent
 nav a[aria-current=page] { color: var(--teal); border-color: var(--teal); }
 .year { display: inline-block; padding: 6px 11px; border-radius: 6px; background: var(--teal-soft); color: #075b52; font-size: .83rem; font-weight: 740; white-space: nowrap; }
 .page { padding-bottom: 56px; }
+.site-footer { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 20px; border-top: 1px solid var(--line); padding-top: 18px; font-size: .9rem; }
 .intro { display: flex; align-items: end; justify-content: space-between; gap: 22px; padding-block: 39px 29px; }
 .intro h1 { font-size: clamp(2rem, 4vw, 3rem); font-weight: 720; letter-spacing: -.056em; line-height: 1.08; }
 .intro p { margin-top: 10px; font-size: 1rem; color: var(--muted); line-height: 1.5; }

@@ -166,18 +166,19 @@ export function calculate(scenario, { omitConversion = false } = {}) {
 
 export function withdrawalTaxBands(scenario, calculation = calculate(scenario)) {
   const rules = rulesFor(scenario.taxYear);
-  const { retirement, rothTaxable, conversion, agi, baseDeduction, senior, status, taxable, preferential, preferredTaxable, brokerage, hsa, charity } = calculation;
+  const { retirement, rothTaxable, conversion, taxableSS, agi, baseDeduction, senior, status, taxable, preferential, preferredTaxable, brokerage, hsa, charity } = calculation;
   const iraTaxable = total(retirement, owner => owner.iraTaxable);
   const planTaxable = total(retirement, owner => owner.planTaxable);
   const iraCash = total(retirement, owner => owner.iraCash);
   const planCash = total(retirement, owner => owner.planCash);
   const owners = householdOwners(scenario);
   const converted = total(owners, owner => owner.conversion);
-  // Attribute withdrawals in display order using the final scenario's taxable
-  // Social Security and deductions. Negative offset represents unused deductions.
-  let offset = agi - preferential - baseDeduction - senior - iraTaxable - planTaxable - rothTaxable - conversion - brokerage.shortTerm - hsa.taxable - charity.taxable;
+  // Allocate Social Security before withdrawals so existing withdrawal bands
+  // retain their position. Negative offset represents unused deductions.
+  let offset = agi - preferential - baseDeduction - senior - taxableSS - iraTaxable - planTaxable - rothTaxable - conversion - brokerage.shortTerm - hsa.taxable - charity.taxable;
   const sources = [
     ['Cash savings', scenario.savingsDraw, 0],
+    ['Social Security benefits', scenario.social, taxableSS],
     ['Taxable brokerage withdrawals', brokerage.principal + brokerage.shortTerm, brokerage.shortTerm],
     ['HSA withdrawals', hsa.gross, hsa.taxable],
     ['Roth IRA withdrawals', total(owners, owner => owner.rothCash), total(owners, owner => Math.min(owner.rothCash, owner.rothEarnings))],
@@ -205,7 +206,7 @@ export function withdrawalTaxBands(scenario, calculation = calculate(scenario)) 
     amount: positive(Math.min(taxable, status.gains[preferentialIndex] ?? Infinity)
       - Math.max(gainFloor, status.gains[preferentialIndex - 1] ?? 0)),
   }));
-  const brokerageRow = rows[1];
+  const brokerageRow = rows[2];
   brokerageRow.gross = cents(brokerageRow.gross + brokerage.longTerm);
   brokerageRow.bands[0].amount += brokerage.longTerm - taxableGain;
   for (const band of brokerageRow.bands.slice(1)) {

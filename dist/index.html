@@ -54,11 +54,11 @@
               <div><span>Estimated federal tax</span><strong id="tax"></strong></div>
             </div>
             <p class="summary-warning" id="summary-warning" hidden>Review the IRA RMD before relying on this conversion estimate.</p>
-            <div class="summary-foot">Excludes withholding, credits and state tax. <span id="hsa-cash-note" hidden>Includes HSA withdrawals before medical spending.</span></div>
+            <div class="summary-foot">Excludes withholding, credits and state tax. <span id="hsa-cash-note" hidden>Qualified HSA medical withdrawals count toward cash before medical spending and are excluded from income for the federal tax estimate.</span></div>
             <a class="summary-link" href="#withdrawal-tax-brackets">View tax liability brackets</a>
           </div>
           <section class="card result-card" aria-labelledby="breakdown-title">
-            <h2 id="breakdown-title">How the tax adds up</h2>
+            <h2 id="breakdown-title">Cash by source</h2>
             <div class="income-bar" role="img" id="income-bar"></div>
             <dl class="breakdown" id="breakdown"></dl>
             <details class="inline-detail"><summary>Federal tax details</summary><dl class="breakdown" id="tax-detail"></dl></details>
@@ -126,6 +126,7 @@
           <div class="table-wrap" id="growth-table"></div>
           <p class="assist chart-note">Both paths transfer the funded conversion from the traditional IRA to the Roth IRA at the start of the projection. The model reserves IRA cash withdrawals and direct gifts to charity when funding the conversion, then applies both at year-end. The investment total includes HSAs. Amounts are in nominal dollars. Cash savings use 0% growth. Repeated withdrawals use the same dollar amounts each year. The projection excludes future taxes, new RMD schedules, inflation, market volatility, and contributions.</p>
         </details>
+        <p class="assist chart-note"><strong>Try a 4% starting withdrawal rate.</strong> Set your annual withdrawals to about 4% of your starting portfolio balance ($40,000 on $1 million), then compare the two lines above. The <a href="https://www.bengenfs.com/the-4-percent-rule/">4% rule</a> adjusts that starting amount for inflation each year. This chart models fixed-dollar withdrawals and steady returns.</p>
       </section>
     </section>
 
@@ -183,6 +184,10 @@
       </div>
     </section>
   </main>
+  <footer class="page site-footer">
+    <a href="https://github.com/connordavidson/taxdaddy">GitHub</a>
+    <a href="https://github.com/connordavidson/taxdaddy/issues">Report an issue</a>
+  </footer>
   <div id="band-tooltip" class="band-tooltip" role="tooltip" hidden></div>
   <aside class="mobile-projection" id="mobile-projection" aria-label="Current projection">
     <div><span>After-tax cash</span><strong id="mobile-net"></strong></div>
