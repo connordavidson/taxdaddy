@@ -158,7 +158,7 @@ function balances() {
       ${fields('age', `Age attained in ${state.taxYear}`, { unit: '', max: 130, step: 1 })}
       </div>
       ${accountPair(String(i), 'Traditional / SEP / SIMPLE IRA', owner, 'iraBalance', 'iraWithdrawal')}
-      ${accountPair(String(i), 'Non-Roth 401(k) / 403(b)', owner, 'planBalance', 'planWithdrawal')}
+      ${accountPair(String(i), '401(k) / 403(b)', owner, 'planBalance', 'planWithdrawal')}
       ${accountPair(String(i), 'Roth IRA', owner, 'rothBalance', 'rothCash')}
       ${accountPair(String(i), 'Roth 401(k) / 403(b)', owner, 'rothPlanBalance', 'rothPlanCash')}
       ${accountPair(String(i), 'Health savings account (HSA)', owner, 'hsaBalance', 'hsaWithdrawal', hsaDetails)}`;
