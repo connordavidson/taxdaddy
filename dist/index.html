@@ -30,17 +30,17 @@
       <div class="dashboard">
         <div class="inputs">
           <section class="card input-card" aria-labelledby="household-title">
-            <header class="card-heading"><span class="section-icon person" aria-hidden="true"></span><div><h2 id="household-title">Household &amp; balances</h2><p>Start with your filing status and December 31, <span data-year="-1"></span> balances.</p></div></header>
+            <header class="card-heading"><span class="section-icon person" aria-hidden="true"></span><div><h2 id="household-title">Household &amp; accounts</h2><p>Pair each December 31, <span data-year="-1"></span> balance with your total expected withdrawal for <span data-year></span>. Include any RMD in that total.</p></div></header>
             <div id="household"></div>
           </section>
 
           <section class="card input-card" aria-labelledby="income-title">
-            <header class="card-heading"><span class="section-icon income" aria-hidden="true"></span><div><h2 id="income-title">Income &amp; savings</h2><p>Enter annual amounts. Type a value for precision or move a slider to explore.</p></div></header>
+            <header class="card-heading"><span class="section-icon income" aria-hidden="true"></span><div><h2 id="income-title">Annual income</h2><p>Enter annual amounts. Type a value for precision or move a slider to explore.</p></div></header>
             <div id="income"></div>
           </section>
 
           <section class="card input-card" aria-labelledby="withdrawal-title">
-            <header class="card-heading"><span class="section-icon account" aria-hidden="true"></span><div><h2 id="withdrawal-title">Withdrawals &amp; Roth conversions</h2><p>Set planned minimum distributions, extra cash withdrawals, and direct IRA conversions.</p></div></header>
+            <header class="card-heading"><span class="section-icon account" aria-hidden="true"></span><div><h2 id="withdrawal-title">RMDs &amp; Roth conversions</h2><p>Specify how much of each planned withdrawal is an RMD and enter any direct IRA conversions.</p></div></header>
             <div id="withdrawals"></div>
           </section>
         </div>
@@ -100,7 +100,7 @@
           </details>
         </section>
         <section class="card input-card" aria-labelledby="growth-chart-title">
-          <header class="card-heading"><div><h2 id="growth-chart-title">Projected balances</h2><p>Nominal dollars. Both paths use the same return and any modeled Roth conversion.</p></div></header>
+          <header class="card-heading"><div><h2 id="growth-chart-title">Projected balances</h2><p>Nominal dollars. Both paths use the same investment return and Roth conversion. Cash savings are shown separately at 0% growth.</p></div></header>
           <label class="field chart-account" for="growth-account"><span>Account view</span><select id="growth-account"></select></label>
           <div class="growth-metrics" id="growth-metrics"></div>
           <div class="chart-legend"><span><i class="line-key baseline" aria-hidden="true"></i>Without withdrawals</span><span><i class="line-key planned" aria-hidden="true"></i>With withdrawals</span></div>

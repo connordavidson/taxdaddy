@@ -6,13 +6,14 @@ function investmentAccounts(scenario) {
   const accounts = [{
     id: 'brokerage', name: 'Taxable brokerage', opening: scenario.brokerageBalance,
     withdrawal: scenario.brokeragePrincipal + scenario.brokerageIncomeDraw,
-  }];
+  }, { id: 'savings', name: 'Cash savings', opening: scenario.savingsBalance, withdrawal: scenario.savingsDraw }];
   householdOwners(scenario).forEach((owner, index) => {
     const label = scenario.status !== 'joint' ? '' : index === 0 ? 'Your ' : 'Spouse’s ';
     accounts.push(
       { id: `ira${index}`, name: label + 'Traditional IRA', opening: owner.iraBalance, withdrawal: owner.iraRmd + owner.iraExtra, conversion: owner.conversion, destination: `roth${index}` },
       { id: `plan${index}`, name: label + 'Non-Roth 401(k)', opening: owner.planBalance, withdrawal: owner.planRmd + owner.planExtra },
-      { id: `roth${index}`, name: label + 'Roth accounts', opening: owner.rothBalance, withdrawal: owner.rothCash },
+      { id: `roth${index}`, name: label + 'Roth IRA', opening: owner.rothBalance, withdrawal: owner.rothCash },
+      { id: `rothPlan${index}`, name: label + 'Roth 401(k)', opening: owner.rothPlanBalance, withdrawal: owner.rothPlanCash },
     );
   });
   return accounts;
@@ -42,7 +43,8 @@ export function projectGrowth(scenario, { rate, years, repeat } = GROWTH_DEFAULT
     withdrawn[account.id] += paid;
     unmet[account.id] += account.withdrawal - paid;
   }
-  const sum = balances => accounts.reduce((value, account) => value + balances[account.id], 0);
+  const investments = accounts.filter(account => account.id !== 'savings');
+  const sum = balances => investments.reduce((value, account) => value + balances[account.id], 0);
   const points = [];
   const snapshot = year => ({
     year,
@@ -52,7 +54,7 @@ export function projectGrowth(scenario, { rate, years, repeat } = GROWTH_DEFAULT
   points.push(snapshot(scenario.taxYear - 1));
   let unconverted = 0;
   for (let offset = 0; offset < years; offset++) {
-    for (const { id } of accounts) {
+    for (const { id } of investments) {
       planned[id] *= 1 + rate / 100;
       baseline[id] *= 1 + rate / 100;
     }

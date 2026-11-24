@@ -15,11 +15,7 @@ export function initGrowthView({ scenario, money }) {
       <select id="growth-years">${[5, 10, 20, 30, 40].map(year => `<option ${year === settings.years ? 'selected' : ''}>${year}</option>`).join('')}</select>
     </label>
     <label class="check"><input id="growth-repeat" type="checkbox">Repeat the same cash withdrawals each year</label>
-    <label class="field" for="growth-brokerage"><span>Brokerage income withdrawn per modeled year</span>
-      <span class="input-shell money"><span class="affix" aria-hidden="true">$</span>
-      <input id="growth-brokerage" data-key="brokerageIncomeDraw" type="number" min="0" max="1000000000" step=".01" aria-describedby="growth-brokerage-hint" value="0"></span>
-      <span class="assist" id="growth-brokerage-hint">Include dividends, interest and realized gains taken out of this account. Principal comes from the Scenario tab. The tax and cash estimate already uses the income entered there.</span>
-    </label>`;
+`;
 
   const numericRate = get('growth-rate');
   const rangeRate = get('growth-rate-slider');
@@ -125,7 +121,8 @@ export function initGrowthView({ scenario, money }) {
     get('growth-metrics').innerHTML = numbers.map(([label, value]) => `<div><span>${label}</span><strong>${money(value)}</strong></div>`).join('');
     canvas.setAttribute('aria-label', `${current.name} through ${final.year}. ${numbers.map(([label, value]) => `${label} ${money(value)}`).join('. ')}.`);
     const message = [];
-    if (unmet.total > 0.005) message.push(`Some accounts ran out of funds. The chart leaves ${money(unmet.total)} of requested cash withdrawals unfunded.`);
+    const unfunded = unmet.total + unmet.savings;
+    if (unfunded > 0.005) message.push(`Some accounts ran out of funds. The chart leaves ${money(unfunded)} of requested cash withdrawals unfunded.`);
     if (unconverted > 0.005) message.push(`The IRA balance was too low for ${money(unconverted)} of the conversion. Both paths use the amount that could transfer.`);
     const warning = get('growth-warning');
     warning.textContent = message.join(' ');
@@ -138,8 +135,5 @@ export function initGrowthView({ scenario, money }) {
   }
 
   new ResizeObserver(draw).observe(canvas);
-  return {
-    render,
-    syncControls() { get('growth-brokerage').value = scenario().brokerageIncomeDraw; },
-  };
+  return { render };
 }

@@ -196,3 +196,10 @@ button:disabled { cursor: default; opacity: .55; }
 }
 
 .summary-link { display: inline-block; margin-top: 8px; color: #e2f6f2; font-size: .87rem; }
+.account-pair { margin-top: 12px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; }
+.account-pair h4 { margin: 0 0 8px; font-size: .91rem; }
+.account-pair .control { padding: 0; grid-template-columns: minmax(0,1fr); gap: 5px; align-content: start; }
+.account-pair .control label { font-size: .89rem; font-weight: 650; }
+.account-pair .input-shell { width: 100%; }
+.account-pair .control input[type=number] { text-align: left; min-height: 38px; }
+.account-pair .control input[type=range] { margin-top: 0; }

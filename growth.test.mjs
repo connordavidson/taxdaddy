@@ -54,3 +54,16 @@ test('negative annual returns still allow a deterministic comparison', () => {
   const { baseline, planned } = result.points.at(-1);
   assert.equal(dollars(baseline.total - planned.total), 4500);
 });
+
+test('cash savings and both Roth account types have independent paths', () => {
+  const input = scenario();
+  Object.assign(input, { savingsBalance: 10000, savingsDraw: 2000 });
+  Object.assign(input.owners[0], { rothBalance: 50000, rothCash: 5000, rothPlanBalance: 20000, rothPlanCash: 2000 });
+  const result = projectGrowth(input, { rate: 10, years: 1, repeat: false });
+  const end = result.points.at(-1);
+  assert.equal(end.planned.savings, 8000);
+  assert.equal(end.baseline.savings, 10000);
+  assert.equal(dollars(end.planned.roth0), 50000);
+  assert.equal(dollars(end.planned.rothPlan0), 20000);
+  assert.equal(dollars(end.planned.total), 70000);
+});

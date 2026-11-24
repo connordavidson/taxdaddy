@@ -123,7 +123,7 @@ test('withdrawal tax bands use the same zero color and split taxable 401(k) cash
   Object.assign(input, { wages: 65000, savingsDraw: 5000, brokeragePrincipal: 3000 });
   Object.assign(input.owners[0], { rothCash: 4000, planExtra: 10000 });
   const sources = withdrawalTaxBands(input);
-  for (const name of ['Cash savings', 'Taxable brokerage principal', 'Roth withdrawals']) {
+  for (const name of ['Cash savings', 'Taxable brokerage principal', 'Roth IRA withdrawals']) {
     const source = sources.find(row => row.name === name);
     assert.deepEqual(source.bands.filter(band => band.amount), [{ rate: 0, amount: source.gross }]);
   }
@@ -139,4 +139,15 @@ test('withdrawal tax bands show the portion of 401(k) income sheltered by the st
   input.owners[0].planExtra = 20000;
   const plan = withdrawalTaxBands(input).find(row => row.name === 'Non-Roth 401(k) withdrawals');
   assert.deepEqual(plan.bands.filter(band => band.amount), [{ rate: 0, amount: 16600 }, { rate: .10, amount: 3400 }]);
+});
+
+test('other taxable income, brokerage principal, and the two Roth accounts flow separately', () => {
+  const input = scenario();
+  Object.assign(input, { wages: 40000, gains: 3000, brokeragePrincipal: 9000, brokerageIncomeDraw: 3000 });
+  Object.assign(input.owners[0], { rothCash: 2000, rothEarnings: 300, rothPlanCash: 4000, rothPlanEarnings: 500 });
+  const result = calculate(input);
+  assert.equal(result.agi, 43800);
+  assert.equal(result.cash, 58000);
+  assert.equal(result.rothTaxable, 800);
+  assert.ok(result.tax > 0);
 });

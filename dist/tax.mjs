@@ -86,8 +86,8 @@ export function calculate(scenario, { omitConversion = false } = {}) {
   const traditionalCash = total(retirement, owner => owner.iraCash + owner.planCash);
   const traditionalTaxable = total(retirement, owner => owner.iraTaxable + owner.planTaxable);
   const conversion = total(retirement, owner => owner.taxableConversion);
-  const roth = total(owners, owner => owner.rothCash);
-  const rothTaxable = total(owners, owner => Math.min(owner.rothCash, owner.rothEarnings));
+  const roth = total(owners, owner => owner.rothCash + owner.rothPlanCash);
+  const rothTaxable = total(owners, owner => Math.min(owner.rothCash, owner.rothEarnings) + Math.min(owner.rothPlanCash, owner.rothPlanEarnings));
   const pensionTaxable = scenario.pension * scenario.pensionTaxable / 100;
   const preferential = scenario.qualified + scenario.gains;
   const investments = scenario.interest + scenario.dividends + preferential;
@@ -112,12 +112,13 @@ export function calculate(scenario, { omitConversion = false } = {}) {
 
 export function withdrawalTaxBands(scenario, calculation = calculate(scenario)) {
   const rules = rulesFor(scenario.taxYear);
-  const { retirement, roth, rothTaxable, conversion, agi, baseDeduction, senior, status } = calculation;
+  const { retirement, rothTaxable, conversion, agi, baseDeduction, senior, status } = calculation;
   const iraTaxable = total(retirement, owner => owner.iraTaxable);
   const planTaxable = total(retirement, owner => owner.planTaxable);
   const iraCash = total(retirement, owner => owner.iraCash);
   const planCash = total(retirement, owner => owner.planCash);
-  const converted = total(householdOwners(scenario), owner => owner.conversion);
+  const owners = householdOwners(scenario);
+  const converted = total(owners, owner => owner.conversion);
   const preferential = scenario.qualified + scenario.gains;
   // Attribute withdrawals in display order using the final scenario's taxable
   // Social Security and deductions. Negative offset represents unused deductions.
@@ -125,7 +126,8 @@ export function withdrawalTaxBands(scenario, calculation = calculate(scenario)) 
   const sources = [
     ['Cash savings', scenario.savingsDraw, 0],
     ['Taxable brokerage principal', scenario.brokeragePrincipal, 0],
-    ['Roth withdrawals', roth, rothTaxable],
+    ['Roth IRA withdrawals', total(owners, owner => owner.rothCash), total(owners, owner => Math.min(owner.rothCash, owner.rothEarnings))],
+    ['Roth 401(k) withdrawals', total(owners, owner => owner.rothPlanCash), total(owners, owner => Math.min(owner.rothPlanCash, owner.rothPlanEarnings))],
     ['Traditional IRA withdrawals', iraCash, iraTaxable],
     ['Non-Roth 401(k) withdrawals', planCash, planTaxable],
     ['IRA-to-Roth conversion', converted, conversion],
@@ -143,7 +145,7 @@ export function withdrawalTaxBands(scenario, calculation = calculate(scenario)) 
 }
 
 export const EMPTY_OWNER = {
-  age: 60, iraBalance: 0, planBalance: 0, rothBalance: 0, iraRmd: 0, planRmd: 0,
+  age: 60, iraBalance: 0, planBalance: 0, rothBalance: 0, rothPlanBalance: 0, rothPlanCash: 0, rothPlanEarnings: 0, iraRmd: 0, planRmd: 0,
   iraExtra: 0, planExtra: 0, rothCash: 0, conversion: 0, iraBasis: 0, iraBeforeFlows: 0,
   planTaxable: 100, rothEarnings: 0, earlyBase: 0, priorIra: 0, priorPlan: 0,
   planExempt: false, deferIra: false, deferPlan: false, blind: false, seniorSSN: true,
