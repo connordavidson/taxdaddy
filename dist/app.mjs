@@ -155,7 +155,7 @@ function balances() {
       })}
     </details>`;
     return `<h3 class="subheading">${ownerName(i)}</h3><div class="field-grid">
-      ${fields('age', `Age attained in ${state.taxYear}`, { unit: '', max: 130, step: 1 })}
+      ${fields('age', `Age on December 31st in ${state.taxYear}`, { unit: '', max: 130, step: 1 })}
       </div>
       ${accountPair(String(i), 'Traditional / SEP / SIMPLE IRA', owner, 'iraBalance', 'iraWithdrawal')}
       ${accountPair(String(i), '401(k) / 403(b)', owner, 'planBalance', 'planWithdrawal')}
