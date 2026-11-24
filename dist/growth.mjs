@@ -1,6 +1,6 @@
 import { householdOwners } from './tax.mjs';
 
-export const GROWTH_DEFAULTS = Object.freeze({ rate: 5, years: 20, repeat: false });
+export const GROWTH_DEFAULTS = Object.freeze({ rate: 5, years: 20, repeat: true });
 
 function investmentAccounts(scenario) {
   const accounts = [{
